@@ -14,7 +14,7 @@
 namespace Interpreter
 {
     // Helper: precedence
-    static int precedence(const std::string &op)
+    inline static int precedence(const std::string &op)
     {
         if (op == "+" || op == "-")
             return 1;
@@ -24,7 +24,7 @@ namespace Interpreter
     }
 
     // Helper: apply operator
-    static double applyOp(const std::string &op, double a, double b)
+    inline static double applyOp(const std::string &op, double a, double b)
     {
         if (op == "+")
             return a + b;
@@ -150,6 +150,8 @@ namespace Interpreter
                 return 4;
             if (op == "*" || op == "/" || op == "%")
                 return 5;
+            if (op == "**")
+                return 6;
             return 0;
         };
 
@@ -157,7 +159,7 @@ namespace Interpreter
         {
             return tok == "+" || tok == "-" || tok == "*" || tok == "/" || tok == "%" ||
                    tok == "==" || tok == "!=" || tok == "<" || tok == ">" || tok == "<=" || tok == ">=" ||
-                   tok == "&&" || tok == "||";
+                   tok == "&&" || tok == "||" || tok == "**";
         };
 
         auto tokens = tokenize(expr);
@@ -288,6 +290,8 @@ namespace Interpreter
                 return TS::Value(a.toBool() && b.toBool());
             if (op == "||")
                 return TS::Value(a.toBool() || b.toBool());
+            if (op == "**")
+                return TS::Value(std::pow(a.toNumber(),b.toNumber()));
 
             return TS::Value();
         };
