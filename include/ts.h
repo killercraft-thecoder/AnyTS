@@ -16,6 +16,12 @@ namespace TS
         std::string message;
     };
 
+    struct RuntimeError {
+        size_t line;
+        std::string file;
+        std::string message;
+    };
+
     // --- Supported Value Types ---
     enum class ValueType
     {

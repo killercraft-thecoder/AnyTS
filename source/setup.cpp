@@ -58,7 +58,9 @@ namespace Setup
             for (auto &err : errors)
             {
                 std::cout << "Line " << err.line << ": " << err.message << "\n";
+                
             }
+            return false;
         }
         Interpreter::executeScript(lines, ctx);
         return true;
