@@ -1,41 +1,76 @@
 #include "setup.h"
 #include "interpreter.h"
 #include "os.h"
+#include "ts.h"
+#include "iostream_virt.h"
 #include <fstream>
 #include <sstream>
 
-namespace {
+namespace
+{
     Interpreter::Context ctx;
 }
 
-namespace Setup {
+namespace std
+{
+    std::string joinStrings(const std::vector<std::string> &parts, const std::string &sep = "")
+    {
+        std::string result;
+        for (size_t i = 0; i < parts.size(); ++i)
+        {
+            result += parts[i];
+            if (i + 1 < parts.size())
+                result += sep;
+        }
+        return result;
+    }
+}
 
-    void initialize() {
+namespace Setup
+{
+
+    void initialize()
+    {
         Interpreter::init(ctx);
     }
 
-    bool runFile(const std::string& filename) {
+    bool runFile(const std::string &filename)
+    {
         std::ifstream file(filename);
-        if (!file) {
+        if (!file)
+        {
             OS::printLine("Error: Could not open file: " + filename);
             return false;
         }
 
         std::vector<std::string> lines;
         std::string line;
-        while (std::getline(file, line)) {
+        while (std::getline(file, line))
+        {
             lines.push_back(line);
         }
 
+        // Run the pre-execution type check
+        auto errors = TS::checkTypesInSource(std::joinStrings(lines));
+
+        if (!errors.empty())
+        {
+            for (auto &err : errors)
+            {
+                std::cout << "Line " << err.line << ": " << err.message << "\n";
+            }
+        }
         Interpreter::executeScript(lines, ctx);
         return true;
     }
 
-    bool runString(const std::string& code) {
+    bool runString(const std::string &code)
+    {
         std::istringstream iss(code);
         std::vector<std::string> lines;
         std::string line;
-        while (std::getline(iss, line)) {
+        while (std::getline(iss, line))
+        {
             lines.push_back(line);
         }
 

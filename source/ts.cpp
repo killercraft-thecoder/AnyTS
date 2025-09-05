@@ -1,6 +1,10 @@
 // ts.cpp
 #include "ts.h"
 #include <sstream>
+#include <map>
+#include <string>
+#include <vector>
+
 
 namespace TS
 {
@@ -135,6 +139,147 @@ namespace TS
     bool varExists(const Environment &env, const std::string &name)
     {
         return env.find(name) != env.end();
+    }
+
+    static inline void trim(std::string &s)
+    {
+        size_t start = 0;
+        while (start < s.size() && isspace((unsigned char)s[start]))
+            start++;
+        size_t end = s.size();
+        while (end > start && isspace((unsigned char)s[end - 1]))
+            end--;
+        s = s.substr(start, end - start);
+    }
+
+    std::vector<TypeError> checkTypesInSource(const std::string &source)
+    {
+        std::vector<TypeError> errors;
+        std::map<std::string, std::vector<std::string>> funcParamTypes;
+
+        // Split into lines
+        std::vector<std::string> lines;
+        {
+            size_t start = 0, end;
+            while ((end = source.find('\n', start)) != std::string::npos)
+            {
+                lines.push_back(source.substr(start, end - start));
+                start = end + 1;
+            }
+            lines.push_back(source.substr(start));
+        }
+
+        // Pass 1: collect function definitions
+        for (size_t i = 0; i < lines.size(); ++i)
+        {
+            std::string line = lines[i];
+            trim(line);
+            if (line.rfind("function ", 0) == 0)
+            {
+                size_t nameStart = 9;
+                size_t nameEnd = nameStart;
+                while (nameEnd < line.size() && (isalnum((unsigned char)line[nameEnd]) || line[nameEnd] == '_'))
+                    nameEnd++;
+                std::string funcName = line.substr(nameStart, nameEnd - nameStart);
+
+                size_t paramStart = line.find('(', nameEnd);
+                size_t paramEnd = line.find(')', paramStart);
+                if (paramStart != std::string::npos && paramEnd != std::string::npos)
+                {
+                    std::string params = line.substr(paramStart + 1, paramEnd - paramStart - 1);
+                    std::vector<std::string> types;
+                    size_t pos = 0;
+                    while (pos < params.size())
+                    {
+                        // skip spaces
+                        while (pos < params.size() && isspace((unsigned char)params[pos]))
+                            pos++;
+                        // skip param name
+                        while (pos < params.size() && (isalnum((unsigned char)params[pos]) || params[pos] == '_'))
+                            pos++;
+                        // skip spaces
+                        while (pos < params.size() && isspace((unsigned char)params[pos]))
+                            pos++;
+                        if (pos < params.size() && params[pos] == ':')
+                        {
+                            pos++;
+                            while (pos < params.size() && isspace((unsigned char)params[pos]))
+                                pos++;
+                            size_t typeStart = pos;
+                            while (pos < params.size() && (isalnum((unsigned char)params[pos]) || params[pos] == '_'))
+                                pos++;
+                            types.push_back(params.substr(typeStart, pos - typeStart));
+                        }
+                        // skip to next param
+                        while (pos < params.size() && params[pos] != ',')
+                            pos++;
+                        if (pos < params.size() && params[pos] == ',')
+                            pos++;
+                    }
+                    funcParamTypes[funcName] = types;
+                }
+            }
+        }
+
+        // Pass 2: check calls
+        for (size_t i = 0; i < lines.size(); ++i)
+        {
+            std::string line = lines[i];
+            trim(line);
+            // find function name
+            for (auto &entry : funcParamTypes)
+            {
+                const std::string &funcName = entry.first;
+                size_t callPos = line.find(funcName + "(");
+                if (callPos != std::string::npos)
+                {
+                    size_t argStart = callPos + funcName.size() + 1;
+                    size_t argEnd = line.find(')', argStart);
+                    if (argEnd != std::string::npos)
+                    {
+                        std::string args = line.substr(argStart, argEnd - argStart);
+                        std::vector<std::string> argList;
+                        size_t pos = 0;
+                        while (pos < args.size())
+                        {
+                            size_t start = pos;
+                            while (pos < args.size() && args[pos] != ',')
+                                pos++;
+                            std::string arg = args.substr(start, pos - start);
+                            trim(arg);
+                            argList.push_back(arg);
+                            if (pos < args.size() && args[pos] == ',')
+                                pos++;
+                        }
+                        // Compare types
+                        auto &expectedTypes = entry.second;
+                        for (size_t ai = 0; ai < argList.size() && ai < expectedTypes.size(); ++ai)
+                        {
+                            const std::string &expected = expectedTypes[ai];
+                            const std::string &arg = argList[ai];
+                            bool isString = arg.size() >= 2 && ((arg.front() == '"' && arg.back() == '"') || (arg.front() == '\'' && arg.back() == '\''));
+                            bool isNumber = !arg.empty() && (isdigit((unsigned char)arg[0]) || arg[0] == '.');
+                            bool isBool = (arg == "true" || arg == "false");
+
+                            if (expected == "number" && !isNumber)
+                            {
+                                errors.push_back({i + 1, "Argument " + std::to_string(ai + 1) + " to " + funcName + " should be a number"});
+                            }
+                            if (expected == "string" && !isString)
+                            {
+                                errors.push_back({i + 1, "Argument " + std::to_string(ai + 1) + " to " + funcName + " should be a string"});
+                            }
+                            if (expected == "boolean" && !isBool)
+                            {
+                                errors.push_back({i + 1, "Argument " + std::to_string(ai + 1) + " to " + funcName + " should be a boolean"});
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return errors;
     }
 
 } // namespace TS
