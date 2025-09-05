@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.asm": "cpuasm",
+        "iostream": "cpp"
+    }
+}
