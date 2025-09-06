@@ -14,6 +14,17 @@ namespace Interpreter
      */
     using Function = std::function<TS::Value(const std::vector<TS::Value> &)>;
 
+// Registers a built-in function in ctx.builtins with a given name
+// Usage: __BUILTIN("Math.sign") { /* body */ }
+#define __BUILTIN(NAME) ctx.builtins[NAME] = TS::Value( \
+    [](const std::vector<TS::Value> &args) -> TS::Value
+
+// Quick-eval macro for expressions in the current context , lacks user functions to be used.also ho
+#define QEVAL(EXPR) evalSimpleExpression((EXPR), ctx.variables, ctx.builtins)
+
+// any type
+#define any std::any
+
     /**
      * Represents a user-defined function definition.
      */
@@ -69,8 +80,7 @@ namespace Interpreter
     TS::Value evalSimpleExpression(
         const std::string &expr,
         TS::Environment &env,
-        const std::unordered_map<std::string, std::function<TS::Value(const std::vector<TS::Value> &)>> &builtins
-    );
+        const std::unordered_map<std::string, std::function<TS::Value(const std::vector<TS::Value> &)>> &builtins);
 
     /**
      * Initializes the interpreter context.

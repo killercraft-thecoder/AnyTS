@@ -1,5 +1,6 @@
 // ts.cpp
 #include "ts.h"
+#include "os.h"
 #include <sstream>
 #include <map>
 #include <string>
@@ -117,6 +118,14 @@ namespace TS
         default:
             return false;
         }
+    }
+    bool Value::isTruthy() const {
+        if (this->type != ValueType::Boolean) {
+            // Raise Runtime Error
+            OS::printLine("Runtime Error:cqannot convert to bool.");
+            return false;
+        }
+        return this->toBool() == true;
     }
 
     // --- Environment Helpers ---

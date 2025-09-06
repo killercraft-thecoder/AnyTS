@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <cstdint>
-#include <chrono>
 
 namespace OS {
 
@@ -66,6 +65,7 @@ namespace OS {
     /**
      * Gets the number of milliseconds since the program started.
      * @returns Milliseconds since program start.
+     * @note Not All Platforms May Support this.
      */
     uint64_t getMillis();
 
@@ -86,6 +86,7 @@ namespace OS {
     /**
      * Gets the current working directory.
      * @returns The current working directory path.
+     * @note Not All Platforms May Support this.
      */
     std::string getWorkingDirectory();
 
@@ -93,6 +94,7 @@ namespace OS {
      * Sets the current working directory.
      * @param path Path to set as the working directory.
      * @returns True if the working directory was changed successfully, false otherwise.
+     * @note Not All Platforms May Support this.
      */
     bool setWorkingDirectory(const std::string& path);
 

@@ -6,90 +6,157 @@
 #include <variant>
 #include <vector>
 #include <optional>
+#include <cmath>
 
 namespace TS
 {
 
-    /** 
+    /**
      * @struct
      * @short Type Error
-    */
+     */
     struct TypeError
     {
-        size_t line; // Line Error Occured on
-        std::string message;  // Error Message
-    };
-
-    /** 
-     * @struct
-     * @short Runtime Error
-    */
-    struct RuntimeError {
-        size_t line; // Line Error Occured on
-        std::string file; // File Error Happened in.
+        size_t line;         // Line Error Occured on
         std::string message; // Error Message
     };
 
-    /** 
+    /**
+     * @struct
+     * @short Runtime Error
+     */
+    struct RuntimeError
+    {
+        size_t line;         // Line Error Occured on
+        std::string file;    // File Error Happened in.
+        std::string message; // Error Message
+    };
+
+    /**
      * @struct
      * @short Error
-    */
-    struct Error {
-        size_t line; // Line Error Occured on
-        std::string message;  // Error Message
+     */
+    struct Error
+    {
+        size_t line;         // Line Error Occured on
+        std::string message; // Error Message
     };
 
     // --- Supported Value Types ---
     enum class ValueType
     {
-        Number, // Number (double)
-        String, // String (std::string)
-        Boolean, // boolean (bool)
-        Null, // NULL
+        Number,    // Number (double)
+        String,    // String (std::string)
+        Boolean,   // boolean (bool)
+        Null,      // NULL
         Undefined, // Undefined
-        NaN, // NaN
+        NaN,       // NaN
     };
 
     // --- Value Representation ---
     struct Value
     {
-        ValueType type; // Current Type
+        ValueType type;                               // Current Type
         std::variant<double, std::string, bool> data; // Current Value
-        
-        Value(); // Null by default
-        Value(double num); // Create a TS::Value with a number.
+
+        Value();                       // Null by default
+        Value(double num);             // Create a TS::Value with a number.
         Value(const std::string &str); // Create a TS::Value with a string.
-        Value(bool b); // Create a TS::Value with a boolean.
+        Value(bool b);                 // Create a TS::Value with a boolean.
+
+        inline size_t size() const
+        {
+            size_t total = sizeof(*this); // shallow size (tag + variant)
+
+            switch (type)
+            {
+            case ValueType::String:
+            {
+                const auto &s = std::get<std::string>(data);
+
+                // Detect if string is using heap storage
+                // SSO threshold varies: 15 (libstdc++/libc++), 22 (MSVC) on 64-bit
+#if defined(_MSC_VER)
+                constexpr size_t SSO_THRESHOLD = 22;
+#else
+                constexpr size_t SSO_THRESHOLD = 15;
+#endif
+
+                if (s.size() > SSO_THRESHOLD)
+                {
+                    // capacity() is the allocated heap buffer size
+                    total += s.capacity() + 1; // +1 for null terminator
+                }
+                break;
+            }
+
+            case ValueType::Number:
+            case ValueType::Boolean:
+            case ValueType::Null:
+            case ValueType::Undefined:
+            case ValueType::NaN:
+                // No extra heap allocation for these
+                break;
+            }
+            return total;
+        }
 
         std::string toString() const;
         double toNumber() const;
         bool toBool() const;
+        bool isTruthy() const;
+
+        // Implicit conversion to bool (safe)
+        operator bool() const
+        {
+            return toBool();
+        }
+
+        // Explicit conversion to double
+        explicit operator double() const
+        {
+            return toNumber();
+        }
+
+        explicit operator float() const {
+            return static_cast<float>(toNumber());
+        }
+
+        explicit operator int32_t() const {
+           return static_cast<int32_t>(std::round(toNumber()));
+        }
+
+        // Explicit conversion to std::string
+        explicit operator std::string() const
+        {
+            return toString();
+        }
     };
 
     // --- Variable Environment ---
     using Environment = std::unordered_map<std::string, Value>;
 
     // --- Environment Helpers ---
-    /** 
+    /**
      * @fn
      * @short Set Varible.
-    */
-    bool setVar(Environment &env, const std::string &name, const Value &value); 
-    /** 
+     */
+    bool setVar(Environment &env, const std::string &name, const Value &value);
+    /**
      * @fn
      * @short Get Varible.
-    */
+     */
     std::optional<Value> getVar(const Environment &env, const std::string &name);
-    /** 
+    /**
      * @fn
      * @short Var Exists?
      * @returns wheter the var exists in the current enviroment.
-    */
+     */
     bool varExists(const Environment &env, const std::string &name);
-    /** 
+    /**
      * @fn
      * @short Check For type Errors.
-    */
-    std::vector<TypeError> checkTypesInSource(const std::string &source); 
+     */
+    std::vector<TypeError> checkTypesInSource(const std::string &source);
 
 } // namespace TS

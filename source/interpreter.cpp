@@ -291,7 +291,7 @@ namespace Interpreter
             if (op == "||")
                 return TS::Value(a.toBool() || b.toBool());
             if (op == "**")
-                return TS::Value(std::pow(a.toNumber(),b.toNumber()));
+                return TS::Value(std::pow(a.toNumber(), b.toNumber()));
 
             return TS::Value();
         };
@@ -452,6 +452,131 @@ namespace Interpreter
             if (args.empty())
                 return TS::Value(std::numeric_limits<double>::quiet_NaN());
             return TS::Value(std::fabs(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.floor"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::floor(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.round"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::round(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.ceil"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::ceil(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.trunc"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::trunc(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.exp"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::exp(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.log"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::log(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.atan"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::atan(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.asin"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::atan(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.acos"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::atan(args[0].toNumber()));
+        };
+
+        ctx.builtins["Math.atan2"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+            return TS::Value(std::atan2(args[0].toNumber(),args[1].toNumber()));
+        };
+
+        ctx.builtins["Math.max"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(-INFINITY);
+            double m = args[0].toNumber();
+            for (size_t i = 1; i < args.size(); ++i)
+            {
+                m = std::max(m, args[i].toNumber());
+            }
+            return TS::Value(m);
+        };
+
+        ctx.builtins["Math.min"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(-INFINITY);
+            double m = args[0].toNumber();
+            for (size_t i = 1; i < args.size(); ++i)
+            {
+                m = std::min(m, args[i].toNumber());
+            }
+            return TS::Value(m);
+        };
+
+        ctx.builtins["sizeof"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+                return TS::Value(0.0);
+
+            // Deep size using your Value::size()
+            size_t sz = args[0].size();
+            return TS::Value(static_cast<double>(sz));
+        };
+
+        ctx.builtins["assert"] = [&ctx](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty())
+            {
+                throw std::runtime_error("assert() called with no arguments");
+            }
+
+            bool condition = evalSimpleExpression(args[0].toString(), ctx.variables, ctx.builtins).toBool();
+            if (!condition)
+            {
+                std::string msg = "Assertion failed";
+                if (args.size() > 1)
+                {
+                    msg += ": " + args[1].toString();
+                }
+                throw std::runtime_error(msg);
+            }
+
+            return TS::Value(true); // return true if assertion passes
         };
     }
 
@@ -667,7 +792,7 @@ namespace Interpreter
 
                         Interpreter::executeLine(bodyLine, localCtx);
                     }
-                    return TS::Value(); // no return yet
+                    return TS::Value(); // no return
                 };
             }
 
