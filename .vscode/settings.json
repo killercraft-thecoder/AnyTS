@@ -6,6 +6,8 @@
         "string": "cpp",
         "deque": "cpp",
         "vector": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "format": "cpp",
+        "cmath": "cpp"
     }
 }

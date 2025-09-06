@@ -11,6 +11,8 @@
 namespace TS
 {
 
+    #define Array<T> = std::vector<T>
+
     /**
      * @struct
      * @short Type Error
@@ -126,6 +128,10 @@ namespace TS
         explicit operator float() const { return static_cast<float>(toNumber()); }
 
         explicit operator int32_t() const { return static_cast<int32_t>(std::round(toNumber())); }
+
+        explicit operator int64_t() const { return static_cast<int64_t>(std::round(toNumber())); }
+
+        explicit operator int16_t() const { return static_cast<int16_t>(std::round(toNumber())); }
 
         // Explicit conversion to std::string
         explicit operator std::string() const
