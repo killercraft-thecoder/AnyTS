@@ -75,11 +75,22 @@ namespace TS
                 const auto &s = std::get<std::string>(data);
 
                 // Detect if string is using heap storage
-                // SSO threshold varies: 15 (libstdc++/libc++), 22 (MSVC) on 64-bit
+                // Detect SSO (Short String Optimization) threshold based on compiler/STL
 #if defined(_MSC_VER)
+                // MSVC's std::string typically uses 22-byte SSO on 64-bit
                 constexpr size_t SSO_THRESHOLD = 22;
-#else
+
+#elif defined(__GLIBCXX__)
+                // libstdc++ (used by GCC) typically uses 15-byte SSO on 64-bit
                 constexpr size_t SSO_THRESHOLD = 15;
+
+#elif defined(_LIBCPP_VERSION)
+                // libc++ (used by Clang) also tends to use 15-byte SSO
+                constexpr size_t SSO_THRESHOLD = 15;
+
+#else
+                // Unknown compiler/STL — fallback to conservative estimate
+                constexpr size_t SSO_THRESHOLD = 20;
 #endif
 
                 if (s.size() > SSO_THRESHOLD)
@@ -107,24 +118,14 @@ namespace TS
         bool isTruthy() const;
 
         // Implicit conversion to bool (safe)
-        operator bool() const
-        {
-            return toBool();
-        }
+        operator bool() const { return toBool(); }
 
         // Explicit conversion to double
-        explicit operator double() const
-        {
-            return toNumber();
-        }
+        explicit operator double() const { return toNumber(); }
 
-        explicit operator float() const {
-            return static_cast<float>(toNumber());
-        }
+        explicit operator float() const { return static_cast<float>(toNumber()); }
 
-        explicit operator int32_t() const {
-           return static_cast<int32_t>(std::round(toNumber()));
-        }
+        explicit operator int32_t() const { return static_cast<int32_t>(std::round(toNumber())); }
 
         // Explicit conversion to std::string
         explicit operator std::string() const

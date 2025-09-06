@@ -13,69 +13,6 @@
 
 namespace Interpreter
 {
-    // Helper: precedence
-    inline static int precedence(const std::string &op)
-    {
-        if (op == "+" || op == "-")
-            return 1;
-        if (op == "*" || op == "/" || op == "%")
-            return 2;
-        return 0;
-    }
-
-    // Helper: apply operator
-    inline static double applyOp(const std::string &op, double a, double b)
-    {
-        if (op == "+")
-            return a + b;
-        if (op == "-")
-            return a - b;
-        if (op == "*")
-            return a * b;
-        if (op == "/")
-            return b == 0 ? NAN : a / b;
-        if (op == "%")
-            return std::fmod(a, b);
-        return 0;
-    }
-
-    // Tokenize into numbers, variables, operators, parentheses
-    static std::vector<std::string> tokenize(const std::string &expr)
-    {
-        std::vector<std::string> tokens;
-        std::string cur;
-        for (size_t i = 0; i < expr.size(); ++i)
-        {
-            char c = expr[i];
-            if (std::isspace(c))
-                continue;
-            if (std::isdigit(c) || c == '.')
-            {
-                cur.clear();
-                while (i < expr.size() && (std::isdigit(expr[i]) || expr[i] == '.'))
-                {
-                    cur.push_back(expr[i++]);
-                }
-                --i;
-                tokens.push_back(cur);
-            }
-            else if (std::isalpha(c) || c == '_' || c == '$')
-            {
-                cur.clear();
-                while (i < expr.size() && (std::isalnum(expr[i]) || expr[i] == '_' || expr[i] == '.'))
-                {
-                    cur.push_back(expr[i++]);
-                }
-                --i;
-                tokens.push_back(cur);
-            }
-            else
-            {
-                tokens.push_back(std::string(1, c));
-            }
-        }
-        return tokens;
-    }
 
     // Main evaluator: takes expression string + environment
     TS::Value evalSimpleExpression(
@@ -138,28 +75,33 @@ namespace Interpreter
             return tokens;
         };
 
-        auto precedence = [](const std::string &op)
+        auto precedence = [](const std::string &op) -> int
         {
-            if (op == "||")
-                return 1;
-            if (op == "&&")
-                return 2;
-            if (op == "==" || op == "!=" || op == "<" || op == ">" || op == "<=" || op == ">=")
-                return 3;
-            if (op == "+" || op == "-")
-                return 4;
-            if (op == "*" || op == "/" || op == "%")
-                return 5;
+            // Highest precedence first
             if (op == "**")
-                return 6;
-            return 0;
+                return 7; // Exponentiation
+            if (op == "*" || op == "/" || op == "%")
+                return 6; // Multiplicative
+            if (op == "+" || op == "-")
+                return 5; // Additive
+            if (op == "<" || op == ">" || op == "<=" || op == ">=")
+                return 4; // Relational
+            if (op == "==" || op == "!=" || op == "===" || op == "!==")
+                return 3; // Equality
+            if (op == "&&")
+                return 2; // Logical AND
+            if (op == "||")
+                return 1; // Logical OR
+
+            return -1; // Unknown operator
         };
 
         auto isOperator = [](const std::string &tok)
         {
             return tok == "+" || tok == "-" || tok == "*" || tok == "/" || tok == "%" ||
-                   tok == "==" || tok == "!=" || tok == "<" || tok == ">" || tok == "<=" || tok == ">=" ||
-                   tok == "&&" || tok == "||" || tok == "**";
+                       tok == "==" || tok == "!=" || tok == "<" || tok == ">" || tok == "<=" || tok == ">=" ||
+                       tok == "&&" || tok == "||" || tok == "**" || tok == "===" || tok == "!==",
+                   "=", "+=", "-=", "*=", "/=", "%=";
         };
 
         auto tokens = tokenize(expr);
@@ -253,7 +195,7 @@ namespace Interpreter
         // --- Evaluate RPN ---
         std::stack<TS::Value> vals;
 
-        auto applyOpVal = [](const std::string &op, TS::Value a, TS::Value b) -> TS::Value
+        auto applyOpVal = [&env](const std::string &op, TS::Value a, TS::Value b) -> TS::Value
         {
             if (op == "+")
             {
@@ -273,9 +215,13 @@ namespace Interpreter
 
             // Comparisons
             if (op == "==")
-                return TS::Value(a.toString() == b.toString());
+                return TS::Value(a.data == b.data);
             if (op == "!=")
-                return TS::Value(a.toString() != b.toString());
+                return TS::Value(a.data != b.data);
+            if (op == "===")
+                return TS::Value(a.type == b.type && a.data == b.data);
+            if (op == "!==")
+                return TS::Value(a.type != b.type || a.data != b.data);
             if (op == "<")
                 return TS::Value(a.toNumber() < b.toNumber());
             if (op == ">")
@@ -521,7 +467,7 @@ namespace Interpreter
         {
             if (args.empty())
                 return TS::Value(0.0);
-            return TS::Value(std::atan2(args[0].toNumber(),args[1].toNumber()));
+            return TS::Value(std::atan2(args[0].toNumber(), args[1].toNumber()));
         };
 
         ctx.builtins["Math.max"] = [](const std::vector<TS::Value> &args) -> TS::Value
