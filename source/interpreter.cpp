@@ -559,6 +559,24 @@ namespace Interpreter
         {
             return TS::Value(static_cast<double>(static_cast<float>(std::get<_half>(args[0].data))))
         }
+        __BUILTIN("HalfMath.equal") {
+            return TS::Value(std::get<_half>(args[0].data) == std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.ln") {
+            return TS::Value(std::get<_half>(args[0].data) < std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.bn") {
+            return TS::Value(std::get<_half>(args[0].data) > std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.ne") {
+            return TS::Value(std::get<_half>(args[0].data) != std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.ben") {
+            return TS::Value(std::get<_half>(args[0].data) >= std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.sen") {
+            return TS::Value(std::get<_half>(args[0].data) <= std::get<_half>(args[1].data));
+        }
 #endif
     }
 
