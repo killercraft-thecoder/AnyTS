@@ -1,6 +1,6 @@
 #include "iostream_virt.h"
 
 namespace std {
-    ostream cout; 
-    istream cin;
+    ostream_2 cout; 
+    istream_2 cin;
 }

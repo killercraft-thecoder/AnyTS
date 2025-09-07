@@ -37,15 +37,15 @@ namespace TS
         case ValueType::Undefined:
             return "undefined";
 
-        #ifdef ADD_STD_HALF
+#ifdef ADD_STD_HALF
         case ValueType::Half:
         {
             std::ostringstream oss;
             _half h = std::get<_half>(data); // extract the half value
-            oss << static_cast<float>(h);  // convert to float and stream it
+            oss << static_cast<float>(h);    // convert to float and stream it
             return oss.str();
         }
-        #endif
+#endif
 
         case ValueType::Null:
         default:
@@ -108,10 +108,10 @@ namespace TS
         case ValueType::Boolean:
             return std::get<bool>(data) ? 1.0 : 0.0;
 
-        #ifdef ADD_STD_HALF
+#ifdef ADD_STD_HALF
         case ValueType::Half:
-           return static_cast<double>(static_cast<float>(std::get<_half>(data)));
-        #endif
+            return static_cast<double>(static_cast<float>(std::get<_half>(data)));
+#endif
         case ValueType::Null:
         default:
             return 0.0;
@@ -128,6 +128,10 @@ namespace TS
             return std::get<double>(data) != 0.0;
         case ValueType::String:
             return !std::get<std::string>(data).empty();
+#ifdef ADD_STD_HALF
+        case ValueType::Half:
+            return std::get<_half>(data) != 0.0;
+#endif
         case ValueType::Null:
         default:
             return false;
@@ -154,11 +158,7 @@ namespace TS
     std::optional<Value> getVar(const Environment &env, const std::string &name)
     {
         auto it = env.find(name);
-        if (it != env.end())
-        {
-            return it->second;
-        }
-        return std::nullopt;
+        return (it != env.end()) ? std::optional<Value>(it->second) : std::nullopt;
     }
 
     bool varExists(const Environment &env, const std::string &name)
@@ -169,15 +169,21 @@ namespace TS
     static inline void trim(std::string &s)
     {
         size_t start = 0;
-        while (start < s.size() && isspace((unsigned char)s[start]))
-            start++;
         size_t end = s.size();
-        while (end > start && isspace((unsigned char)s[end - 1]))
-            end--;
-        s = s.substr(start, end - start);
+
+        // Skip leading whitespace
+        while (start < end && std::isspace(static_cast<unsigned char>(s[start])))
+            ++start;
+
+        // Skip trailing whitespace
+        while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1])))
+            --end;
+
+        if (start > 0 || end < s.size())
+            s.erase(end, s.size() - end), s.erase(0, start);
     }
 
-    #ifndef SKIP_TYPECHECK
+#ifndef SKIP_TYPECHECK
     std::vector<TypeError> checkTypesInSource(const std::string &source)
     {
         std::vector<TypeError> errors;
@@ -307,6 +313,6 @@ namespace TS
 
         return errors;
     }
-    #endif
+#endif
 
 } // namespace TS

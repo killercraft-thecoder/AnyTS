@@ -7,11 +7,10 @@
 #include <vector>
 #include <optional>
 #include <cmath>
+#include <cstdint>
 
 namespace TS
 {
-
-    #define Array<T> = std::vector<T>
 
     /**
      * @struct
@@ -69,10 +68,10 @@ namespace TS
         std::variant<double, std::string, bool,_half> data; // Current Value
 
         Value();                       // Null by default
-        Value(double num);             // Create a TS::Value with a number.
-        Value(const std::string &str); // Create a TS::Value with a string.
-        Value(bool b);                 // Create a TS::Value with a boolean.
-        Value(_half b);                 // Create a TS::Value with a half.
+        explicit Value(double num);             // Create a TS::Value with a number.
+        explicit Value(const std::string &str); // Create a TS::Value with a string.
+        explicit Value(bool b);                 // Create a TS::Value with a boolean.
+        explicit Value(_half b);                 // Create a TS::Value with a half.
 
         inline size_t size() const
         {

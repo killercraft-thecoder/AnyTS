@@ -346,7 +346,7 @@ namespace Interpreter
                     OS::print(" ");
             }
             OS::printLine("");
-            return TS::Value(); // undefined
+            return TS::Value(true); // sucess!
         };
 
         // Built-in constants
@@ -354,6 +354,9 @@ namespace Interpreter
         TS::setVar(ctx.variables, "undefined", TS::Value()); // null/undefined equivalent
         TS::setVar(ctx.variables, "Math.PI", TS::Value(M_PI));
         TS::setVar(ctx.variables, "Math.E", TS::Value(M_E));
+        TS::setVar(ctx.variables, "Math.EPSILON", TS::Value(2.220446049250313e-16));
+
+#ifndef REMOVE_MATH_LIB
 
         // Math functions
         ctx.builtins["Math.sqrt"] = [](const std::vector<TS::Value> &args) -> TS::Value
@@ -497,6 +500,8 @@ namespace Interpreter
             return TS::Value(m);
         };
 
+#endif
+
         ctx.builtins["sizeof"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
             if (args.empty())
@@ -530,7 +535,8 @@ namespace Interpreter
 #ifdef ADD_STD_HALF
         __BUILTIN("half")
         { // let x = half(a)
-            if (args[0].type != TS::ValueType::Number) {
+            if (args[0].type != TS::ValueType::Number)
+            {
                 return TS::Value(_half(0));
             }
             return TS::Value(_half(args[0].toNumber()));
@@ -541,7 +547,7 @@ namespace Interpreter
         }
         __BUILTIN("HalfMath.sub")
         {
-           return TS::Value(std::get<_half>(args[0].data) - std::get<_half>(args[1].data));
+            return TS::Value(std::get<_half>(args[0].data) - std::get<_half>(args[1].data));
         }
         __BUILTIN("HalfMath.div")
         {
@@ -557,27 +563,123 @@ namespace Interpreter
         }
         __BUILTIN("double") // Explicit Cast to double
         {
-            return TS::Value(static_cast<double>(static_cast<float>(std::get<_half>(args[0].data))))
-        }
-        __BUILTIN("HalfMath.equal") {
+            return TS::Value(static_cast<double>(static_cast<float>(std::get<_half>(args[0].data))))} __BUILTIN("HalfMath.equal")
+        {
             return TS::Value(std::get<_half>(args[0].data) == std::get<_half>(args[1].data));
         }
-        __BUILTIN("HalfMath.ln") {
+        __BUILTIN("HalfMath.ln")
+        {
             return TS::Value(std::get<_half>(args[0].data) < std::get<_half>(args[1].data));
         }
-        __BUILTIN("HalfMath.bn") {
+        __BUILTIN("HalfMath.bn")
+        {
             return TS::Value(std::get<_half>(args[0].data) > std::get<_half>(args[1].data));
         }
-        __BUILTIN("HalfMath.ne") {
+        __BUILTIN("HalfMath.ne")
+        {
             return TS::Value(std::get<_half>(args[0].data) != std::get<_half>(args[1].data));
         }
-        __BUILTIN("HalfMath.ben") {
+        __BUILTIN("HalfMath.ben")
+        {
             return TS::Value(std::get<_half>(args[0].data) >= std::get<_half>(args[1].data));
         }
-        __BUILTIN("HalfMath.sen") {
+        __BUILTIN("HalfMath.sen")
+        {
             return TS::Value(std::get<_half>(args[0].data) <= std::get<_half>(args[1].data));
         }
+        __BUILTIN("HalfMath.zero")
+        {
+            return TS::Value(_half(0));
+        }
+        __BUILTIN("HalfMath.isZero"){
+            return TS::Value((std::get<_half>(args[0].data) == _half(0)))} __BUILTIN("HalfMath.ELIPSON"){
+            return TS::Value(0.0009765625)} __BUILTIN("HalfMath.isNaN")
+        {
+            return TS::Value(std::isnan(static_cast<float>(std::get<_half>(args[0].data))));
+        }
+
 #endif
+#ifndef REDUCE_BUILTIN
+        ctx.builtins["isNaN"] = [](const std::vector<TS::Value> &args) -> TS::Value
+        {
+            if (args.empty() || args[0].type != TS::ValueType::Number)
+            {
+                return TS::Value(false);
+            }
+            return TS::Value(std::isnan(std::get<double>(args[0].data)));
+        };
+        __BUILTIN("typeof")
+        {
+            return TS::Value(_stringify_type(args[0].type));
+        };
+
+        __BUILTIN2("typeofVar")
+        {
+            if (args.empty() || args[0].type != TS::ValueType::String)
+                return TS::Value("undefined");
+
+            auto name = std::get<std::string>(args[0].data);
+            auto var = TS::getVar(ctx.variables, name);
+            return TS::Value(var ? _stringify_type(var->type) : "undefined");
+        };
+
+        __BUILTIN("lenStr")
+        {
+            if (args.empty() || args[0].type != TS::ValueType::String)
+            {
+                return TS::Value(); // return NULL
+            }
+            return TS::Value(static_cast<double>(std::get<std::string>(args[0].data).size()));
+        };
+
+        __BUILTIN("trimStr")
+        {
+            if (args.empty() || args[0].type != TS::ValueType::String)
+            {
+                return TS::Value(); // return NULL
+            }
+            std::string str = std::get<std::string>(args[0].data);
+            __trim(str);
+            return TS::Value(str);
+        };
+
+#endif
+    }
+    // Needed to advoid errors.
+    static inline void __trim(std::string &s)
+    {
+        size_t start = 0;
+        size_t end = s.size();
+
+        // Skip leading whitespace
+        while (start < end && std::isspace(static_cast<unsigned char>(s[start])))
+            ++start;
+
+        // Skip trailing whitespace
+        while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1])))
+            --end;
+
+        if (start > 0 || end < s.size())
+            s.erase(end, s.size() - end), s.erase(0, start);
+    }
+
+    std::string _stringify_type(TS::ValueType v)
+    {
+        switch (v)
+        {
+        case TS::ValueType::Boolean:
+            return "boolean";
+        case TS::ValueType::Number:
+            return "number";
+        case TS::ValueType::Half:
+            return "half";
+        case TS::ValueType::Null:
+            return "null";
+        case TS::ValueType::String:
+            return "string";
+        default:
+            return "any";
+        }
     }
 
     void executeLine(const std::string &rawLine, Context &ctx)

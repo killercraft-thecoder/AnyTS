@@ -6,20 +6,20 @@
 namespace std
 {
 
-    class ostream
+    class ostream_2
     {
     public:
         // Generic template for most types
         template <typename T>
-        ostream &operator<<(const T &value)
+        ostream_2 &operator<<(const T &value)
         {
             OS::print(toString(value));
             return *this;
         }
 
         // Overload for manipulators like endl
-        using Manipulator = ostream &(*)(ostream &);
-        ostream &operator<<(Manipulator manip)
+        using Manipulator = ostream_2 &(*)(ostream_2 &);
+        ostream_2 &operator<<(Manipulator manip)
         {
             return manip(*this);
         }
@@ -50,17 +50,17 @@ namespace std
     };
 
     // Simple endl manipulator
-    inline ostream &endl(ostream &os)
+    inline ostream_2 &endl(ostream_2 &os)
     {
         OS::printLine("");
         return os;
     }
 
     // Global instance like std::cout
-    extern ostream cout;
+    extern ostream_2 cout;
 
     // -------- Input Stream --------
-    class istream
+    class istream_2
     {
     public:
         template <typename T>
@@ -80,7 +80,7 @@ namespace std
         }
     };
 
-    extern istream cin;
+    extern istream_2 cin;
 
     // -------- getline equivalent --------
     inline bool getline(istream &in, std::string &out)

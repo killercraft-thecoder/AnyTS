@@ -16,8 +16,9 @@ namespace Interpreter
 
 // Registers a built-in function in ctx.builtins with a given name
 // Usage: __BUILTIN("Math.sign") { /* body */ }
-#define __BUILTIN(NAME) ctx.builtins[NAME] = TS::Value( \
-    [](const std::vector<TS::Value> &args) -> TS::Value
+#define __BUILTIN(NAME) ctx.builtins[NAME] = [](const std::vector<TS::Value> &args) -> TS::Value
+
+#define __BUILTIN2(NAME) ctx.builtins[NAME] = [&ctx](const std::vector<TS::Value> &args) -> TS::Value
 
 // Quick-eval macro for expressions in the current context , lacks user functions to be used.also ho
 #define QEVAL(EXPR) evalSimpleExpression((EXPR), ctx.variables, ctx.builtins)
