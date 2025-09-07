@@ -53,18 +53,26 @@ namespace TS
         Null,      // NULL
         Undefined, // Undefined
         NaN,       // NaN
+        Half       // half (fp16)
     };
+    
+    #ifdef ADD_STD_HALF
+    #define _half half
+    #else
+    #define _half float
+    #endif
 
     // --- Value Representation ---
     struct Value
     {
         ValueType type;                               // Current Type
-        std::variant<double, std::string, bool> data; // Current Value
+        std::variant<double, std::string, bool,_half> data; // Current Value
 
         Value();                       // Null by default
         Value(double num);             // Create a TS::Value with a number.
         Value(const std::string &str); // Create a TS::Value with a string.
         Value(bool b);                 // Create a TS::Value with a boolean.
+        Value(_half b);                 // Create a TS::Value with a half.
 
         inline size_t size() const
         {

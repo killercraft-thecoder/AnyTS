@@ -50,6 +50,7 @@ namespace Setup
             lines.push_back(line);
         }
 
+        #ifndef SKIPTYPE_CHECK
         // Run the pre-execution type check
         auto errors = TS::checkTypesInSource(std::joinStrings(lines));
 
@@ -62,6 +63,7 @@ namespace Setup
             }
             return false;
         }
+        #endif
         Interpreter::executeScript(lines, ctx);
         return true;
     }

@@ -10,6 +10,9 @@
 #include <stack>
 #include <queue>
 #include "iostream_virt.h"
+#ifdef ADD_STD_HALF
+#include "half.h"
+#endif
 
 namespace Interpreter
 {
@@ -524,6 +527,39 @@ namespace Interpreter
 
             return TS::Value(true); // return true if assertion passes
         };
+#ifdef ADD_STD_HALF
+        __BUILTIN("half")
+        { // let x = half(a)
+            if (args[0].type != TS::ValueType::Number) {
+                return TS::Value(_half(0));
+            }
+            return TS::Value(_half(args[0].toNumber()));
+        }
+        __BUILTIN("HalfMath.add")
+        {
+            return TS::Value(std::get<_half>(args[0].data) + std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.sub")
+        {
+           return TS::Value(std::get<_half>(args[0].data) - std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.div")
+        {
+            return TS::Value(std::get<_half>(args[0].data) / std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.mul")
+        {
+            return TS::Value(std::get<_half>(args[0].data) * std::get<_half>(args[1].data));
+        }
+        __BUILTIN("HalfMath.mod")
+        {
+            return TS::Value(std::get<_half>(args[0].data) % std::get<_half>(args[1].data));
+        }
+        __BUILTIN("double") // Explicit Cast to double
+        {
+            return TS::Value(static_cast<double>(static_cast<float>(std::get<_half>(args[0].data))))
+        }
+#endif
     }
 
     void executeLine(const std::string &rawLine, Context &ctx)

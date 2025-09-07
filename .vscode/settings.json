@@ -8,6 +8,7 @@
         "vector": "cpp",
         "array": "cpp",
         "format": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "variant": "cpp"
     }
 }

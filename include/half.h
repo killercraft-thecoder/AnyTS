@@ -1,4 +1,5 @@
 #pragma once
+#ifdef ADD_STD_HALF
 #include <cstdint>
 #include <cmath>
 
@@ -83,29 +84,36 @@ inline half operator-(int i, const half &h)
 }
 
 // half * float
-inline half operator*(const half& h, float f) {
+inline half operator*(const half &h, float f)
+{
     return half(float(h) * f);
 }
-inline half operator*(float f, const half& h) {
+inline half operator*(float f, const half &h)
+{
     return half(f * float(h));
 }
 
 // half - float
-inline half operator-(const half& h, float f) {
+inline half operator-(const half &h, float f)
+{
     return half(float(h) - f);
 }
-inline half operator-(float f, const half& h) {
+inline half operator-(float f, const half &h)
+{
     return half(f - float(h));
 }
 
 // half += half
-inline half& operator+=(half& lhs, const half& rhs) {
+inline half &operator+=(half &lhs, const half &rhs)
+{
     lhs = lhs + rhs;
     return lhs;
 }
 
 // half -= half
-inline half& operator-=(half& lhs, const half& rhs) {
+inline half &operator-=(half &lhs, const half &rhs)
+{
     lhs = lhs - rhs;
     return lhs;
 }
+#endif

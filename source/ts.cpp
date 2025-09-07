@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-
 namespace TS
 {
 
@@ -15,6 +14,7 @@ namespace TS
     Value::Value(double num) : type(ValueType::Number), data(num) {}
     Value::Value(const std::string &str) : type(ValueType::String), data(str) {}
     Value::Value(bool b) : type(ValueType::Boolean), data(b) {}
+    Value::Value(_half b) : type(ValueType::Half), data(b) {}
 
     // --- Conversions ---
     std::string Value::toString() const
@@ -36,6 +36,16 @@ namespace TS
 
         case ValueType::Undefined:
             return "undefined";
+
+        #ifdef ADD_STD_HALF
+        case ValueType::Half:
+        {
+            std::ostringstream oss;
+            _half h = std::get<_half>(data); // extract the half value
+            oss << static_cast<float>(h);  // convert to float and stream it
+            return oss.str();
+        }
+        #endif
 
         case ValueType::Null:
         default:
@@ -98,6 +108,10 @@ namespace TS
         case ValueType::Boolean:
             return std::get<bool>(data) ? 1.0 : 0.0;
 
+        #ifdef ADD_STD_HALF
+        case ValueType::Half:
+           return static_cast<double>(static_cast<float>(std::get<_half>(data)));
+        #endif
         case ValueType::Null:
         default:
             return 0.0;
@@ -119,10 +133,12 @@ namespace TS
             return false;
         }
     }
-    bool Value::isTruthy() const {
-        if (this->type != ValueType::Boolean) {
+    bool Value::isTruthy() const
+    {
+        if (this->type != ValueType::Boolean)
+        {
             // Raise Runtime Error
-            OS::printLine("Runtime Error:cqannot convert to bool.");
+            OS::printLine("Runtime Error:ca0annot convert to bool.");
             return false;
         }
         return this->toBool() == true;
@@ -161,6 +177,7 @@ namespace TS
         s = s.substr(start, end - start);
     }
 
+    #ifndef SKIP_TYPECHECK
     std::vector<TypeError> checkTypesInSource(const std::string &source)
     {
         std::vector<TypeError> errors;
@@ -290,5 +307,6 @@ namespace TS
 
         return errors;
     }
+    #endif
 
 } // namespace TS

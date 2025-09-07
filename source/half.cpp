@@ -1,5 +1,5 @@
 #include "half.h"
-
+#ifdef ADD_STD_HALF
 // Conversion helpers
 inline uint16_t half::float_to_half(float f)
 {
@@ -170,3 +170,4 @@ inline half fmod(const half &a, const half &b)
 {
     return half(std::fmod(half::half_to_float(a.bits), half::half_to_float(b.bits)));
 }
+#endif
