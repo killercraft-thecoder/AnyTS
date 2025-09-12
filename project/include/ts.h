@@ -44,7 +44,7 @@ namespace TS
     };
 
     // --- Supported Value Types ---
-    enum class ValueType
+    enum class ValueType : uint8_t
     {
         Number,    // Number (double)
         String,    // String (std::string)

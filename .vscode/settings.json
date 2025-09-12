@@ -9,6 +9,7 @@
         "array": "cpp",
         "format": "cpp",
         "cmath": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "streambuf": "cpp"
     }
 }

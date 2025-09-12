@@ -1,6 +1,6 @@
 // interpreter.cpp
-#include "interpreter.h"
-#include "os.h"
+#include "project\include\interpreter.h"
+#include "project/include/os.h"
 #include <sstream>
 #include <algorithm>
 #include <cmath>
@@ -9,7 +9,7 @@
 #include <cctype>
 #include <stack>
 #include <queue>
-#include "iostream_virt.h"
+#include "project/include/iostream_virt.h"
 #ifdef ADD_STD_HALF
 #include "half.h"
 #endif
