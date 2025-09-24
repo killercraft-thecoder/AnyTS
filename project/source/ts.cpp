@@ -11,7 +11,7 @@ namespace TS
 
     // --- Value Constructors ---
     Value::Value() : type(ValueType::Null), data(false) {}
-    Value::Value(double num) : type(ValueType::Number), data(num) {}
+    Value::Value(NUMBER num) : type(ValueType::Number), data(num) {}
     Value::Value(const std::string &str) : type(ValueType::String), data(str) {}
     Value::Value(bool b) : type(ValueType::Boolean), data(b) {}
     Value::Value(_half b) : type(ValueType::Half), data(b) {}
@@ -24,7 +24,7 @@ namespace TS
         case ValueType::Number:
         {
             std::ostringstream oss;
-            oss << std::get<double>(data);
+            oss << std::get<NUMBER>(data);
             return oss.str();
         }
         case ValueType::String:
@@ -53,9 +53,9 @@ namespace TS
         }
     }
 
-    double Value::toNumber() const
+    NUMBER Value::toNumber() const
     {
-        auto fastParseDouble = [](const std::string &s, bool &ok) -> double
+        auto fastParseNUMBER = [](const std::string &s, bool &ok) -> NUMBER
         {
             const char *str = s.c_str();
             char *endptr = nullptr;
@@ -71,7 +71,7 @@ namespace TS
                 return 0.0;
 
             errno = 0;
-            double val = std::strtod(str, &endptr);
+            NUMBER val = std::strtod(str, &endptr);
 
             if (endptr != str && errno == 0)
             {
@@ -84,13 +84,13 @@ namespace TS
         switch (type)
         {
         case ValueType::Number:
-            return std::get<double>(data);
+            return std::get<NUMBER>(data);
 
         case ValueType::String:
         {
             const std::string &strVal = std::get<std::string>(data);
             bool ok = false;
-            double parsed = fastParseDouble(strVal, ok);
+            NUMBER parsed = fastParseNUMBER(strVal, ok);
             if (ok)
                 return parsed;
 
@@ -110,7 +110,7 @@ namespace TS
 
 #ifdef ADD_STD_HALF
         case ValueType::Half:
-            return static_cast<double>(static_cast<float>(std::get<_half>(data)));
+            return static_cast<NUMBER>(static_cast<float>(std::get<_half>(data)));
 #endif
         case ValueType::Null:
         default:
@@ -125,7 +125,7 @@ namespace TS
         case ValueType::Boolean:
             return std::get<bool>(data);
         case ValueType::Number:
-            return std::get<double>(data) != 0.0;
+            return std::get<NUMBER>(data) != 0.0;
         case ValueType::String:
             return !std::get<std::string>(data).empty();
 #ifdef ADD_STD_HALF
@@ -137,12 +137,12 @@ namespace TS
             return false;
         }
     }
-    bool Value::isTruthy() const
+    inline bool Value::isTruthy() const
     {
         if (this->type != ValueType::Boolean)
         {
             // Raise Runtime Error
-            OS::printLine("Runtime Error:ca0annot convert to bool.");
+            OS::printLine("Runtime Error:caannot convert to bool.");
             return false;
         }
         return this->toBool() == true;

@@ -11,5 +11,6 @@
         "cmath": "cpp",
         "variant": "cpp",
         "streambuf": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

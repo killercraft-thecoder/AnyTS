@@ -211,7 +211,7 @@ namespace Interpreter
             if (op == "*")
                 return TS::Value(a.toNumber() * b.toNumber());
             if (op == "/")
-                return TS::Value(b.toNumber() == 0 ? std::numeric_limits<double>::quiet_NaN()
+                return TS::Value(b.toNumber() == 0 ? std::numeric_limits<NUMBER>::quiet_NaN()
                                                    : a.toNumber() / b.toNumber());
             if (op == "%")
                 return TS::Value(std::fmod(a.toNumber(), b.toNumber()));
@@ -300,13 +300,13 @@ namespace Interpreter
             else if (tok == "undefined" || tok == "null")
                 vals.push(TS::Value());
             else if (tok == "NaN")
-                vals.push(TS::Value(std::numeric_limits<double>::quiet_NaN()));
+                vals.push(TS::Value(std::numeric_limits<NUMBER>::quiet_NaN()));
             else
             {
                 // Number or variable
                 try
                 {
-                    double num = std::stod(tok);
+                    NUMBER num = std::stod(tok);
                     vals.push(TS::Value(num));
                 }
                 catch (...)
@@ -350,7 +350,7 @@ namespace Interpreter
         };
 
         // Built-in constants
-        TS::setVar(ctx.variables, "NaN", TS::Value(std::numeric_limits<double>::quiet_NaN()));
+        TS::setVar(ctx.variables, "NaN", TS::Value(std::numeric_limits<NUMBER>::quiet_NaN()));
         TS::setVar(ctx.variables, "undefined", TS::Value()); // null/undefined equivalent
         TS::setVar(ctx.variables, "Math.PI", TS::Value(M_PI));
         TS::setVar(ctx.variables, "Math.E", TS::Value(M_E));
@@ -362,47 +362,47 @@ namespace Interpreter
         ctx.builtins["Math.sqrt"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
             if (args.empty())
-                return TS::Value(std::numeric_limits<double>::quiet_NaN());
+                return TS::Value(std::numeric_limits<NUMBER>::quiet_NaN());
             return TS::Value(std::sqrt(args[0].toNumber()));
         };
 
         ctx.builtins["Math.sin"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
             if (args.empty())
-                return TS::Value(std::numeric_limits<double>::quiet_NaN());
+                return TS::Value(std::numeric_limits<NUMBER>::quiet_NaN());
             return TS::Value(std::sin(args[0].toNumber()));
         };
 
         ctx.builtins["Math.cos"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
             if (args.empty())
-                return TS::Value(std::numeric_limits<double>::quiet_NaN());
+                return TS::Value(std::numeric_limits<NUMBER>::quiet_NaN());
             return TS::Value(std::cos(args[0].toNumber()));
         };
 
         ctx.builtins["Math.tan"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
             if (args.empty())
-                return TS::Value(std::numeric_limits<double>::quiet_NaN());
+                return TS::Value(std::numeric_limits<NUMBER>::quiet_NaN());
             return TS::Value(std::tan(args[0].toNumber()));
         };
 
         ctx.builtins["Math.pow"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
             if (args.size() < 2)
-                return TS::Value(std::numeric_limits<double>::quiet_NaN());
+                return TS::Value(std::numeric_limits<NUMBER>::quiet_NaN());
             return TS::Value(std::pow(args[0].toNumber(), args[1].toNumber()));
         };
 
         ctx.builtins["Math.random"] = [](const std::vector<TS::Value> &) -> TS::Value
         {
-            return TS::Value(static_cast<double>(std::rand()) / RAND_MAX);
+            return TS::Value(static_cast<NUMBER>(std::rand()) / RAND_MAX);
         };
 
         ctx.builtins["Math.abs"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
             if (args.empty())
-                return TS::Value(std::numeric_limits<double>::quiet_NaN());
+                return TS::Value(std::numeric_limits<NUMBER>::quiet_NaN());
             return TS::Value(std::fabs(args[0].toNumber()));
         };
 
@@ -480,7 +480,7 @@ namespace Interpreter
         {
             if (args.empty())
                 return TS::Value(-INFINITY);
-            double m = args[0].toNumber();
+            NUMBER m = args[0].toNumber();
             for (size_t i = 1; i < args.size(); ++i)
             {
                 m = std::max(m, args[i].toNumber());
@@ -492,7 +492,7 @@ namespace Interpreter
         {
             if (args.empty())
                 return TS::Value(-INFINITY);
-            double m = args[0].toNumber();
+            NUMBER m = args[0].toNumber();
             for (size_t i = 1; i < args.size(); ++i)
             {
                 m = std::min(m, args[i].toNumber());
@@ -509,7 +509,7 @@ namespace Interpreter
 
             // Deep size using your Value::size()
             size_t sz = args[0].size();
-            return TS::Value(static_cast<double>(sz));
+            return TS::Value(static_cast<NUMBER>(sz));
         };
 
         ctx.builtins["assert"] = [&ctx](const std::vector<TS::Value> &args) -> TS::Value
@@ -561,9 +561,9 @@ namespace Interpreter
         {
             return TS::Value(std::get<_half>(args[0].data) % std::get<_half>(args[1].data));
         }
-        __BUILTIN("double") // Explicit Cast to double
+        __BUILTIN("NUMBER") // Explicit Cast to NUMBER
         {
-            return TS::Value(static_cast<double>(static_cast<float>(std::get<_half>(args[0].data))))} __BUILTIN("HalfMath.equal")
+            return TS::Value(static_cast<NUMBER>(static_cast<float>(std::get<_half>(args[0].data))))} __BUILTIN("HalfMath.equal")
         {
             return TS::Value(std::get<_half>(args[0].data) == std::get<_half>(args[1].data));
         }
@@ -606,7 +606,7 @@ namespace Interpreter
             {
                 return TS::Value(false);
             }
-            return TS::Value(std::isnan(std::get<double>(args[0].data)));
+            return TS::Value(std::isnan(std::get<NUMBER>(args[0].data)));
         };
         __BUILTIN("typeof")
         {
@@ -629,7 +629,7 @@ namespace Interpreter
             {
                 return TS::Value(); // return NULL
             }
-            return TS::Value(static_cast<double>(std::get<std::string>(args[0].data).size()));
+            return TS::Value(static_cast<NUMBER>(std::get<std::string>(args[0].data).size()));
         };
 
         __BUILTIN("trimStr")
@@ -1203,7 +1203,7 @@ namespace Interpreter
                         {
                             try
                             {
-                                double num = std::stod(argTrimmed);
+                                NUMBER num = std::stod(argTrimmed);
                                 args.push_back(TS::Value(num));
                             }
                             catch (...)
@@ -1249,7 +1249,7 @@ namespace Interpreter
                     {
                         try
                         {
-                            double num = std::stod(argTrimmed);
+                            NUMBER num = std::stod(argTrimmed);
                             args.push_back(TS::Value(num));
                         }
                         catch (...)

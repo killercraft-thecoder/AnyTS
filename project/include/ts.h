@@ -9,6 +9,12 @@
 #include <cmath>
 #include <cstdint>
 
+#ifdef USE_FLOAT_NUMBER
+typedef float NUMBER;
+#else
+typedef double NUMBER;
+#endif
+
 namespace TS
 {
 
@@ -54,24 +60,24 @@ namespace TS
         NaN,       // NaN
         Half       // half (fp16)
     };
-    
-    #ifdef ADD_STD_HALF
-    #define _half half
-    #else
-    #define _half float
-    #endif
+
+#ifdef ADD_STD_HALF
+#define _half half
+#else
+#define _half float
+#endif
 
     // --- Value Representation ---
     struct Value
     {
-        ValueType type;                               // Current Type
-        std::variant<double, std::string, bool,_half> data; // Current Value
+        ValueType type;                                      // Current Type
+        std::variant<double, std::string, bool, _half> data; // Current Value
 
-        Value();                       // Null by default
+        Value();                                // Null by default
         explicit Value(double num);             // Create a TS::Value with a number.
         explicit Value(const std::string &str); // Create a TS::Value with a string.
         explicit Value(bool b);                 // Create a TS::Value with a boolean.
-        explicit Value(_half b);                 // Create a TS::Value with a half.
+        explicit Value(_half b);                // Create a TS::Value with a half.
 
         inline size_t size() const
         {
@@ -124,10 +130,64 @@ namespace TS
         std::string toString() const;
         double toNumber() const;
         bool toBool() const;
-        bool isTruthy() const;
+        inline bool isTruthy() const;
 
         // Implicit conversion to bool (safe)
         operator bool() const { return toBool(); }
+
+        // Prefix increment
+        inline Value &operator++()
+        {
+            std::get<double>(data) += 1.0;
+            return *this;
+        }
+
+        // Postfix increment
+        inline Value operator++(int)
+        {
+            Value temp = *this;
+            ++(*this);
+            return temp;
+        }
+
+        // Prefix decrement
+        inline Value &operator--()
+        {
+            std::get<double>(data) -= 1.0;
+            return *this;
+        }
+
+        // Postfix decrement
+        inline Value operator--(int)
+        {
+            Value temp = *this;
+            --(*this);
+            return temp;
+        }
+
+        // Unary plus
+        inline Value operator+() const
+        {
+            return *this;
+        }
+
+        // Unary minus
+        inline Value operator-() const
+        {
+            return Value{-std::get<double>(data)};
+        }
+
+        // Binary addition
+        inline Value operator+(const Value &rhs) const
+        {
+            return Value{std::get<double>(data) + std::get<double>(rhs.data)};
+        }
+
+        // Binary subtraction
+        inline Value operator-(const Value &rhs) const
+        {
+            return Value{std::get<double>(data) - std::get<double>(rhs.data)};
+        }
 
         // Explicit conversion to double
         explicit operator double() const { return toNumber(); }
