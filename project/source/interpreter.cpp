@@ -561,7 +561,7 @@ namespace Interpreter
         {
             return TS::Value(std::get<_half>(args[0].data) % std::get<_half>(args[1].data));
         }
-        __BUILTIN("NUMBER") // Explicit Cast to NUMBER
+        __BUILTIN("Number") // Explicit Cast to Number
         {
             return TS::Value(static_cast<NUMBER>(static_cast<float>(std::get<_half>(args[0].data))))} __BUILTIN("HalfMath.equal")
         {
