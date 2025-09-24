@@ -83,7 +83,7 @@ namespace std
     extern istream_2 cin;
 
     // -------- getline equivalent --------
-    inline bool getline(istream &in, std::string &out)
+    inline bool getline(istream_2 &in, std::string &out)
     {
         return OS::readLine(out);
     }
