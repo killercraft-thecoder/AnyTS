@@ -671,8 +671,10 @@ namespace Interpreter
             return "boolean";
         case TS::ValueType::Number:
             return "number";
+        #ifdef ADD_STD_HALF
         case TS::ValueType::Half:
             return "half";
+        #endif
         case TS::ValueType::Null:
             return "null";
         case TS::ValueType::String:

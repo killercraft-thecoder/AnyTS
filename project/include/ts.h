@@ -52,7 +52,7 @@ namespace TS
     // --- Supported Value Types ---
     enum class ValueType : uint8_t
     {
-        Number,    // Number (double)
+        Number,    // Number (NUMBER)
         String,    // String (std::string)
         Boolean,   // boolean (bool)
         Null,      // NULL
@@ -71,10 +71,10 @@ namespace TS
     struct Value
     {
         ValueType type;                                      // Current Type
-        std::variant<double, std::string, bool, _half> data; // Current Value
+        std::variant<NUMBER, std::string, bool, _half> data; // Current Value
 
         Value();                                // Null by default
-        explicit Value(double num);             // Create a TS::Value with a number.
+        explicit Value(NUMBER num);             // Create a TS::Value with a number.
         explicit Value(const std::string &str); // Create a TS::Value with a string.
         explicit Value(bool b);                 // Create a TS::Value with a boolean.
         explicit Value(_half b);                // Create a TS::Value with a half.
@@ -128,7 +128,7 @@ namespace TS
         }
 
         std::string toString() const;
-        double toNumber() const;
+        NUMBER toNumber() const;
         bool toBool() const;
         inline bool isTruthy() const;
 
@@ -138,7 +138,7 @@ namespace TS
         // Prefix increment
         inline Value &operator++()
         {
-            std::get<double>(data) += 1.0;
+            std::get<NUMBER>(data) += 1.0;
             return *this;
         }
 
@@ -153,7 +153,7 @@ namespace TS
         // Prefix decrement
         inline Value &operator--()
         {
-            std::get<double>(data) -= 1.0;
+            std::get<NUMBER>(data) -= 1.0;
             return *this;
         }
 
@@ -174,23 +174,23 @@ namespace TS
         // Unary minus
         inline Value operator-() const
         {
-            return Value{-std::get<double>(data)};
+            return Value{-std::get<NUMBER>(data)};
         }
 
         // Binary addition
         inline Value operator+(const Value &rhs) const
         {
-            return Value{std::get<double>(data) + std::get<double>(rhs.data)};
+            return Value{std::get<NUMBER>(data) + std::get<NUMBER>(rhs.data)};
         }
 
         // Binary subtraction
         inline Value operator-(const Value &rhs) const
         {
-            return Value{std::get<double>(data) - std::get<double>(rhs.data)};
+            return Value{std::get<NUMBER>(data) - std::get<NUMBER>(rhs.data)};
         }
 
-        // Explicit conversion to double
-        explicit operator double() const { return toNumber(); }
+        // Explicit conversion to NUMBER
+        explicit operator NUMBER() const { return toNumber(); }
 
         explicit operator float() const { return static_cast<float>(toNumber()); }
 
