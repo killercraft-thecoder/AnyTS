@@ -650,7 +650,7 @@ namespace Interpreter
         {
             if (args.empty() || args[0].type != TS::ValueType::String)
             {
-                return TS::Value();
+                return TS::Value(false);
             }
             std::string temp;
             OS::readFile(args[0].toString() + ".ts", temp);
@@ -662,7 +662,7 @@ namespace Interpreter
                 lines.push_back(line);
             }
             executeScript(lines, ctx);
-            return TS::Value();
+            return TS::Value(true);
         };
 #endif
     }
