@@ -9,6 +9,8 @@
 #include <cctype>
 #include <stack>
 #include <queue>
+#include <fstream>
+#include <sstream>
 #include "project/include/iostream_virt.h"
 #ifdef ADD_STD_HALF
 #include "half.h"
@@ -336,6 +338,7 @@ namespace Interpreter
 
     void init(Context &ctx)
     {
+
         // Built-in console.log
         ctx.builtins["console.log"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
@@ -643,6 +646,24 @@ namespace Interpreter
             return TS::Value(str);
         };
 
+        __BUILTIN2("require")
+        {
+            if (args.empty() || args[0].type != TS::ValueType::String)
+            {
+                return TS::Value();
+            }
+            std::string temp;
+            OS::readFile(args[0].toString() + ".ts", temp);
+            std::istringstream iss(temp);
+            std::vector<std::string> lines;
+            std::string line;
+            while (std::getline(iss, line))
+            {
+                lines.push_back(line);
+            }
+            executeScript(lines, ctx);
+            return TS::Value();
+        };
 #endif
     }
     // Needed to advoid errors.
@@ -671,10 +692,10 @@ namespace Interpreter
             return "boolean";
         case TS::ValueType::Number:
             return "number";
-        #ifdef ADD_STD_HALF
+#ifdef ADD_STD_HALF
         case TS::ValueType::Half:
             return "half";
-        #endif
+#endif
         case TS::ValueType::Null:
             return "null";
         case TS::ValueType::String:
