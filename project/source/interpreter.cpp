@@ -462,14 +462,14 @@ namespace Interpreter
         {
             if (args.empty())
                 return TS::Value(0.0);
-            return TS::Value(std::atan(args[0].toNumber()));
+            return TS::Value(std::asin(args[0].toNumber()));
         };
 
         ctx.builtins["Math.acos"] = [](const std::vector<TS::Value> &args) -> TS::Value
         {
             if (args.empty())
                 return TS::Value(0.0);
-            return TS::Value(std::atan(args[0].toNumber()));
+            return TS::Value(std::acos(args[0].toNumber()));
         };
 
         ctx.builtins["Math.atan2"] = [](const std::vector<TS::Value> &args) -> TS::Value
