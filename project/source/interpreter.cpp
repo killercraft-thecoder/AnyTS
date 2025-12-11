@@ -348,7 +348,7 @@ namespace Interpreter
                 if (i < args.size() - 1)
                     OS::print(" ");
             }
-            OS::printLine("");
+            OS::printLine("\n");
             return TS::Value(true); // sucess!
         };
 
